@@ -56,7 +56,7 @@ def getCvSample(fileName: str, dstPath: str) -> str:
 
 
 
-def optimApproxPoly(vertice: typing.List[np.ndarray], 
+def optimApproxPoly(vertice: np.ndarray, 
                     maxAreaDiff: float, 
                     startE: float, 
                     stepE: float, 
@@ -65,7 +65,7 @@ def optimApproxPoly(vertice: typing.List[np.ndarray],
     """Reduce vertices by approximating a contour until area reach maxinum area difference.
 
     Args:
-        vertice (typing.List[np.ndarray]): An array of contour vertice.
+        vertice (np.ndarray): An array of contour vertice.
         maxAreaDiff (float): Maximum area difference between original contour and approximated contour.
         startE (float): Starting coefficient to calculate approximation.
         stepE (float): Increment step of the coefficient.
@@ -94,3 +94,30 @@ def optimApproxPoly(vertice: typing.List[np.ndarray],
         print(f"From vertice count {len(vertice)} to {len(approx)}.")
         print(f"e = {e}\neps = {eps}\narea diff = {areaDiff}")
     return approx, e, eps, areaDiff
+
+
+
+def iterOptimApproxPoly(contours: typing.List[np.ndarray], 
+                        maxAreaDiff: float, 
+                        startE: float, 
+                        stepE: float, 
+                        maxIter: int, 
+                        verbose: bool = False) -> list:
+    """Iterate reducing vertices by approximating a contour until area reach maxinum area difference.
+
+    Args:
+        contours (typing.List[np.ndarray]): An array of contours.
+        maxAreaDiff (float): Maximum area difference between original contour and approximated contour.
+        startE (float): Starting coefficient to calculate approximation.
+        stepE (float): Increment step of the coefficient.
+        maxIter (int): Maximum number of iterations.
+        verbose (bool, optional): Print results. Defaults to False.
+
+    Returns:
+        list: Approximated contours
+    """
+    approxContours = []
+    for cnt in contours:
+        oneStroke, _, _, _ = optimApproxPoly(cnt, maxAreaDiff, startE, stepE, maxIter, verbose)
+        approxContours.append(oneStroke)
+    return approxContours
