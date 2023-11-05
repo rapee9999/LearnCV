@@ -126,11 +126,14 @@ def iterOptimApproxPoly(contours: typing.List[np.ndarray],
 
 def showContours(imageSize: typing.Tuple[int,int], 
                  contours: np.ndarray, 
-                 title: str = "", 
-                 doShowIndice: bool = True, 
+                 title: str = "",
+                 contourColor: typing.Tuple[int,int,int] = (255,255,255),
+                 doShowIndice: bool = True,
+                 indexStride: int = 1,
                  fontScale: float = 0.3,
                  fontThick: int = 1,
-                 axes: plt.Axes = None,
+                 fontColor: typing.Tuple[int,int,int] = (255,255,255),
+                 ax: plt.Axes = None,
                  doShow: bool = True) -> np.ndarray:
     """Show contours with vertice and index.
 
@@ -138,23 +141,28 @@ def showContours(imageSize: typing.Tuple[int,int],
         imageSize (typing.Tuple[int,int]): Image size height by width.
         contours (np.ndarray): Contours array.
         title (str, optional): Title shown above plot. Defaults to "".
+        contourColor (typing.Tuple[int,int,int], optional): Color of contour lines and points. Defaults to (255,255,255).
         doShowIndice (bool, optional): Show point indice beside points. Defaults to True.
+        indexStride (int, optional): Show index every indexStride. Defaults to 1.
         fontScale (float, optional): Font scale. Defaults to 0.3.
         fontThick (int, optional): Font thickness. Defaults to 1.
-        axes (plt.Axes, optional): Matplotlib's axes. Defaults to None.
+        fontColor (typing.Tuple[int,int,int], optional): Index font color. Defaults to (255,255,255).
+        ax (plt.Axes, optional): Matplotlib's ax. Defaults to None.
         doShow: (bool, optional): Set to show image. Defaults to True.
 
     Returns:
         np.ndarray: Shown image.
     """
     image = np.zeros(list(imageSize) + [3], np.uint8)
-    cv2.drawContours(image, contours, -1, (255,255,255), 1)
+    cv2.drawContours(image, contours, -1, contourColor, 1)
     for cnt in contours:
         for i, point in enumerate(cnt):
-            cv2.circle(image, point[0], 1, (255,255,255), 2)
-            if doShowIndice: cv2.putText(image, f"{i}", point[0], cv2.FONT_HERSHEY_SIMPLEX, fontScale, (255,255,255), fontThick)
-    if isinstance(axes, plt.Axes):
-        axes.imshow(image), axes.set_title(title)
+            cv2.circle(image, point[0], 1, contourColor, 2)
+            if doShowIndice:
+                if not (i % indexStride): 
+                    cv2.putText(image, f"{i}", point[0], cv2.FONT_HERSHEY_SIMPLEX, fontScale, fontColor, fontThick)
+    if isinstance(ax, plt.Axes):
+        ax.imshow(image), ax.set_title(title)
     elif doShow:
         plt.imshow(image), plt.title(title), plt.show()
     return image
