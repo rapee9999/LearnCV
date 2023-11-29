@@ -167,3 +167,60 @@ def showContours(imageSize: typing.Tuple[int,int],
         plt.imshow(image), plt.title(title), plt.show()
     return image
 
+
+
+def drawContourPlots(image: np.ndarray,
+                     contours: np.ndarray,
+                     hierarchy: np.ndarray,
+                     ncols: int = 3,
+                     figScale: typing.Tuple[int,int] = (4,4),
+                     imShow: bool = True,
+                     showColor: bool = False) -> np.ndarray:
+    """Breakdown contours to subplots. Each subplot draw each contour.
+
+    Args:
+        image (np.ndarray): Image which contours are found.
+        contours (np.ndarray): A list of contours.
+        hierarchy (np.ndarray): A list of contour hierarchy.
+        ncols (int, optional): Number of subplot columns. Defaults to 3.
+        figScale (Tuple[int,int], optional): Figure size for each contour. Defaults to (4,4).
+        imShow (bool, optional): Set to display or otherwise. Defaults to True.
+        showColor (bool, optional): Set to display color. Defaults to False.
+
+    Returns:
+        np.ndarray: Images of individual contours.
+    """
+    cntNum = len(contours)
+    cntImgs = np.array([], np.uint8).reshape(0, *image.shape)
+    
+    if imShow:
+        ncols = np.min([ncols, cntNum])
+        nrows = int(np.ceil(cntNum / ncols)) + 1
+        fig = plt.figure(figsize=(ncols * figScale[0], nrows * figScale[1]))
+        gs = fig.add_gridspec(nrows, ncols)
+        
+        ax = fig.add_subplot(gs[0, :])
+        ax.imshow(image, 'gray')
+        ax.set_title("Input")
+        
+    for i in range(cntNum): 
+        img = np.zeros(image.shape, np.uint8)
+        img = cv2.drawContours(img, contours, i, 255, 1)
+        cntImgs = np.append(cntImgs, img.reshape(1, *img.shape), 0)
+        if imShow: 
+            ax = fig.add_subplot(gs[1 + i // ncols, i % ncols])
+            ax.set_title(f"{i} {hierarchy[0][i]}")
+            if showColor:
+                fillMap = img == 255
+                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+                img[fillMap] = (int(i*360/cntNum),255,255)
+                img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB)
+                ax.imshow(img)
+            else:
+                ax.imshow(img, 'gray')
+    if imShow:
+        fig.show()
+        
+    return cntImgs
+
